@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-public class BlurRenderPassFeature : ScriptableRendererFeature
+public class FullscreenRendererFeature : ScriptableRendererFeature
 {
     [System.Serializable]
     public class Settings
@@ -10,15 +10,10 @@ public class BlurRenderPassFeature : ScriptableRendererFeature
         public bool isEnabled = true;
         public RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
  
-        public Material blurMaterial = null;
-        [Range(0.0f, 0.015f)]
-        public float blurX;
-        [Range(0.0f, 0.015f)]
-        public float blurY;
-        public bool grayscale = false;
+        public Material blitMaterial = null;
     }
     
-    private BlurPass m_BlurPass;
+    private FullScreenRenderPass m_BlurPass;
     [SerializeField]
     private Settings m_passSettings = new Settings();
 
@@ -30,20 +25,21 @@ public class BlurRenderPassFeature : ScriptableRendererFeature
 
     public override void Create()
     {
-        m_BlurPass = new BlurPass(m_passSettings, name);
+        m_BlurPass = new FullScreenRenderPass(m_passSettings, name);
     }
  
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
         if (!m_passSettings.isEnabled) return;
 
-        if (m_passSettings.blurMaterial == null)
+        if (m_passSettings.blitMaterial == null)
         {
             Debug.LogWarningFormat("Missing Blit Material. {0} blit pass will not execute. Check for missing reference in the assigned renderer.", GetType().Name);
             return;
         }
 
-        if (!renderingData.cameraData.isPreviewCamera)
+        // By checking the following, the ScriptableRendererFeature will only rendered in the GameView
+        if (!renderingData.cameraData.isSceneViewCamera && !renderingData.cameraData.isPreviewCamera)
         {
             m_BlurPass.Setup(renderer.cameraColorTarget);
             renderer.EnqueuePass(m_BlurPass);

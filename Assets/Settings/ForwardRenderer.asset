@@ -35,7 +35,8 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: -4408079910950209931}
   - {fileID: 1492334419187758990}
-  m_RendererFeatureMap: 75f6460ead5ad3c28e77c65d3fd6b514
+  - {fileID: 2705179562444420792}
+  m_RendererFeatureMap: 75f6460ead5ad3c28e77c65d3fd6b514b87625b97aba8a25
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
   shaders:
@@ -84,6 +85,23 @@ MonoBehaviour:
     blurX: 0.00668
     blurY: 0.00716
     grayscale: 1
+--- !u!114 &2705179562444420792
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b3c3315dd2f7044b4cce3db83b17c2, type: 3}
+  m_Name: NewFullscreenRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 0
+  m_passSettings:
+    isEnabled: 1
+    renderPassEvent: 550
+    blitMaterial: {fileID: 2100000, guid: 1615b046670d91144b649a56a3efe62a, type: 2}
 --- !u!114 &8671103728031359589
 MonoBehaviour:
   m_ObjectHideFlags: 0

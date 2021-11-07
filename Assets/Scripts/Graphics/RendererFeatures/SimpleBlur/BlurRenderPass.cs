@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-public class BlurPass : ScriptableRenderPass
+public class BlurRenderPass : ScriptableRenderPass
 {
     string m_ProfilerTag;
     private Material m_BlurMaterial = null;
@@ -15,7 +15,7 @@ public class BlurPass : ScriptableRenderPass
     static readonly int m_BlurX = Shader.PropertyToID("_BlurX");
     static readonly int m_BlurY = Shader.PropertyToID("_BlurY");
 
-    public BlurPass(BlurRenderPassFeature.Settings settings, string tag)
+    public BlurRenderPass(BlurRendererFeature.Settings settings, string tag)
     {
         renderPassEvent = settings.renderPassEvent;
         m_ProfilerTag = tag;
