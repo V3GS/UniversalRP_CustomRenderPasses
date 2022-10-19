@@ -1,0 +1,19 @@
+{
+  "name": "com.aka_vector_vr.universalrenderpipelinehelper",
+  "version": "0.0.1",
+  "displayName": "Universal Render Pipeline Helper",
+  "description": "The purpose of this package is offering a set of scripts that allows to:\n- Load a specific Scriptable Render Pipeline asset per scene.\n- Allow to change certain properties of a specific Renderer Feature.",
+  "unity": "2020.3",
+  "unityRelease": "0f1",
+  "keywords": [
+    "Universal Render Pipeline",
+    "Scriptable Render Feature",
+    "Scriptable Render Pipeline",
+    "Custom Render Passes"
+  ],
+  "author": {
+    "name": "Victor Riascos",
+    "email": "vector3studio@gmail.com",
+    "url": "https://twitter.com/aka_vector_vr"
+  }
+}

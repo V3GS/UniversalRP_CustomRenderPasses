@@ -19,7 +19,7 @@ Below are shown the examples developed on this repository.
 ## Override Material
 This example shows how to filter a set of renderers based on the [layermask](https://docs.unity3d.com/ScriptReference/LayerMask.html) and then replace their materials for a custom one (that can be configured in the Renderer Features inspector - OverrideMaterialRenderPassFeature).
 
-![Override Material result](http://drive.google.com/uc?export=view&id=1VP-wpzLzOGTN97ziFGsQvMgQoIvUFwTg)
+![Override Material result](Images/01_OverrideMaterial.gif)
 
 Files to take into account for achieving this effect:
  * C# file(s): `OverrideMaterialRenderPassFeature.cs` and `OverrideMaterialRenderPass.cs`
@@ -29,7 +29,7 @@ Files to take into account for achieving this effect:
 ## Simple blur
 This is a full-screen effect that samples multiple times the _CameraColorTexture and displace them changing the offset property on X and Y axis. Finally, the result is blitted into the Camera color texture.
 
-![Simple blur result](http://drive.google.com/uc?export=view&id=1jk9bAyECp4qiQ--R2Pn2C5GlHWQPPNFG)
+![Simple blur result](Images/02_SimpleBlur.gif)
 
 Files to take into account for achieving this effect:
  * C# file(s): `BlurRendererFeature.cs` and `BlurRenderPass.cs`
@@ -41,15 +41,25 @@ This Renderer Feature allows to render full-screen effects based on a specific M
 In the following screenshots, it's shown this pass working with different shaders:
 
 #### Gameboy effect
-![Gameboy effect](http://drive.google.com/uc?export=view&id=1eSuIdRxB9Mf1Ba7QYywZzEncJYEOqQDi)
+![Gameboy effect](Images/03a_GameboyEffect.jpg)
 
 #### Grayscale effect
-![Grayscale effect](http://drive.google.com/uc?export=view&id=1ctx_N8qsw0WRKSRFWP93H6mUlZLK2EmQ)
+![Grayscale effect](Images/03b_GrayscaleEffect.jpg)
 
 #### Invert colors effect
-![Invert colors effect](http://drive.google.com/uc?export=view&id=14BkdJu3Ez4Z4OyT8lnE8LB9tW-1-TzWt)
+![Invert colors effect](Images/03c_InvertColorsEffect.jpg)
 
 Files to take into account for achieving this effect:
  * C# file(s): `FullscreenRendererFeature.cs` and `FullScreenRenderPass.cs`
  * Shader(s): `GameboyEffect.shadergraph`, `GrayscaleEffect.shadergraph`, `InvertColorsEffect.shadergraph`
  * Material(s): `M_GameboyEffect.mat`, `M_GrayscaleEffect.mat`, `M_InvertColorsEffect.mat`
+
+## Radar effect
+In this scene, an ScriptableRenderFeature is used for rendering a radar effect by using the DepthBuffer ([Scene Depth node](https://docs.unity3d.com/Packages/com.unity.shadergraph@10.8/manual/Scene-Depth-Node.html)) for it. For testing purposes, by using a [Physics.OverlapSphere](https://docs.unity3d.com/ScriptReference/Physics.OverlapSphere.html), the layer masks of a set of GameObjects are changed for visualizing the objects behind a geometry.
+
+![Radar effect result](Images/04_RadarEffect.gif)
+
+Files to take into account for achieving this effect:
+ * C# file(s): `RadarRendererFeature.cs` and `RadarScreenRenderPass.cs`
+ * Shader(s): `RadarEffect.shadergraph`
+ * Material(s): `M_RadarEffect.mat`

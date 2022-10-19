@@ -42,7 +42,7 @@ class OverrideMaterialRenderPass : ScriptableRenderPass
             var sortFlags = renderingData.cameraData.defaultOpaqueSortFlags;
             var drawSettings = CreateDrawingSettings(m_ShaderTagIdList, ref renderingData, sortFlags);
             drawSettings.perObjectData = PerObjectData.None;
-            
+
             drawSettings.overrideMaterial = m_OverrideMaterial;
             context.DrawRenderers(renderingData.cullResults, ref drawSettings, ref m_FilteringSettings);
         }
