@@ -45,9 +45,13 @@ public class BlurRendererFeature : ScriptableRendererFeature
 
         if (!renderingData.cameraData.isPreviewCamera)
         {
-            m_BlurPass.Setup(renderer.cameraColorTarget);
             renderer.EnqueuePass(m_BlurPass);
         }
+    }
+
+    public override void SetupRenderPasses(ScriptableRenderer renderer, in RenderingData renderingData)
+    {
+        m_BlurPass.Setup(renderer.cameraColorTargetHandle);
     }
 }
 

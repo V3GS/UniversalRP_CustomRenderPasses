@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 public class FullscreenRendererFeature : ScriptableRendererFeature
@@ -11,9 +10,10 @@ public class FullscreenRendererFeature : ScriptableRendererFeature
         public RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
  
         public Material blitMaterial = null;
+        public bool GenerateTemporaryColorTexture = false;
     }
     
-    private FullScreenRenderPass m_BlurPass;
+    private FullScreenRenderPass m_FullScreenPass;
     [SerializeField]
     private Settings m_passSettings = new Settings();
 
@@ -25,7 +25,7 @@ public class FullscreenRendererFeature : ScriptableRendererFeature
 
     public override void Create()
     {
-        m_BlurPass = new FullScreenRenderPass(m_passSettings, name);
+        m_FullScreenPass = new FullScreenRenderPass(m_passSettings, name);
     }
  
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -41,9 +41,19 @@ public class FullscreenRendererFeature : ScriptableRendererFeature
         // By checking the following, the ScriptableRendererFeature will only rendered in the GameView
         if (!renderingData.cameraData.isSceneViewCamera && !renderingData.cameraData.isPreviewCamera)
         {
-            m_BlurPass.Setup(renderer.cameraColorTarget);
-            renderer.EnqueuePass(m_BlurPass);
+            renderer.EnqueuePass(m_FullScreenPass);
         }
+    }
+
+    public override void SetupRenderPasses(ScriptableRenderer renderer, in RenderingData renderingData)
+    {
+        m_FullScreenPass.ConfigureInput(ScriptableRenderPassInput.Color);
+        m_FullScreenPass.Setup(renderer.cameraColorTargetHandle, renderingData);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        m_FullScreenPass.Dispose();
     }
 }
 

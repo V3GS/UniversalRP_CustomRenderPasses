@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 public class RadarController : MonoBehaviour
 {
     [SerializeField]
-    private ForwardRendererData m_RendererData = null;
+    private UniversalRendererData m_RendererData = null;
     [SerializeField]
     private Transform m_PlayerTransform;
     [SerializeField]

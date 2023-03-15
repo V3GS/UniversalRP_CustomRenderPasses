@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -6,46 +5,64 @@ using UnityEngine.Rendering.Universal;
 public class FullScreenRenderPass : ScriptableRenderPass
 {
     string m_ProfilerTag;
-    private Material m_BlitMaterial = null;
-    private RenderTargetIdentifier m_Source { get; set; }
-    RenderTargetHandle m_TemporaryColorTexture;
+    Material m_BlitMaterial = null;
+    bool m_GenerateTemporaryColorTexture = false;
+
+    RTHandle m_Source;
+    RTHandle m_TemporaryColorTexture;
 
     public FullScreenRenderPass(FullscreenRendererFeature.Settings settings, string tag)
     {
         renderPassEvent = settings.renderPassEvent;
         m_ProfilerTag = tag;
-        m_TemporaryColorTexture.Init("_TemporaryColorTexture");
-        
+        m_GenerateTemporaryColorTexture = settings.GenerateTemporaryColorTexture;
+
         m_BlitMaterial = settings.blitMaterial;
     }
-     
-    public void Setup(RenderTargetIdentifier sourceRenderTargetIdentifier)
+
+    public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
     {
-        this.m_Source = sourceRenderTargetIdentifier;
+        ConfigureTarget(m_Source);
     }
-     
+
+    public void Setup(RTHandle destinationColor, in RenderingData renderingData)
+    {
+        m_Source = destinationColor;
+
+        if (m_GenerateTemporaryColorTexture)
+        {
+            var colorCopyDescriptor = renderingData.cameraData.cameraTargetDescriptor;
+            colorCopyDescriptor.depthBufferBits = (int)DepthBits.None;
+            RenderingUtils.ReAllocateIfNeeded(ref m_TemporaryColorTexture, colorCopyDescriptor, name: "_TemporaryColorTexture");
+        }
+    }
+
     public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
     {
         CommandBuffer cmd = CommandBufferPool.Get();
+        var cameraData = renderingData.cameraData;
 
         using (new ProfilingScope(cmd, new ProfilingSampler(m_ProfilerTag)))
         {
-            RenderTextureDescriptor opaqueDesc = renderingData.cameraData.cameraTargetDescriptor;
-            opaqueDesc.depthBufferBits = 0;
-
-            // It can't read and write to same color target, for that reason is necessary a temporary render texture
-            cmd.GetTemporaryRT(m_TemporaryColorTexture.id, opaqueDesc);
-
-            Blit(cmd, m_Source, m_TemporaryColorTexture.Identifier(), m_BlitMaterial);
-            Blit(cmd, m_TemporaryColorTexture.Identifier(), m_Source);
+            if (m_GenerateTemporaryColorTexture)
+            {
+                Blitter.BlitCameraTexture(cmd, m_Source, m_TemporaryColorTexture, m_BlitMaterial, 0);
+                Blitter.BlitCameraTexture(cmd, m_TemporaryColorTexture, m_Source);
+            }
+            else
+            {
+                Blitter.BlitCameraTexture(cmd, m_Source, m_Source, m_BlitMaterial, 0);
+            }
         }
 
         context.ExecuteCommandBuffer(cmd);
+        cmd.Clear();
         CommandBufferPool.Release(cmd);
     }
-         
-    public override void FrameCleanup(CommandBuffer cmd)
+
+    public void Dispose()
     {
-        cmd.ReleaseTemporaryRT(m_TemporaryColorTexture.id);
+        m_Source?.Release();
+        m_TemporaryColorTexture?.Release();
     }
 }

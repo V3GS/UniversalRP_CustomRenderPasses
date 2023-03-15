@@ -44,9 +44,13 @@ public class RadarRendererFeature : ScriptableRendererFeature
         // By checking the following, the ScriptableRendererFeature will only rendered in the GameView
         if (!renderingData.cameraData.isSceneViewCamera && !renderingData.cameraData.isPreviewCamera)
         {
-            m_RadarPass.Setup(renderer.cameraColorTarget);
             renderer.EnqueuePass(m_RadarPass);
         }
+    }
+
+    public override void SetupRenderPasses(ScriptableRenderer renderer, in RenderingData renderingData)
+    {
+        m_RadarPass.Setup(renderer.cameraColorTargetHandle);
     }
 }
 
