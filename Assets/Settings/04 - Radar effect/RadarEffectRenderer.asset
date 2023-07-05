@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   m_passSettings:
-    isEnabled: 0
+    isEnabled: 1
     renderPassEvent: 300
     blitMaterial: {fileID: 2100000, guid: 1a70dea8aca879d45839a051eb246154, type: 2}
     WaveDistance: 0
@@ -86,10 +86,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87b1854ea40c78f42b002fdf24b7975d, type: 3}
   m_Name: OverrideMaterialEnemyRenderPassFeature
   m_EditorClassIdentifier: 
-  m_Active: 0
+  m_Active: 1
   m_passSettings:
     isEnabled: 1
-    renderPassEvent: 1000
+    renderPassEvent: 600
     overrideMaterial: {fileID: 2100000, guid: f929d7181cc178141b98b5240b899952, type: 2}
     layerMask:
       serializedVersion: 2
