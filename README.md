@@ -1,12 +1,12 @@
 # UniversalRP - Custom Render Passes
 This repository contains a collection of Custom Renderer Features examples.
 
-###### Current support: Unity 2020.3.21f1 with UniversalRP 10.6.0
+###### Current support: Unity 2022.3.27f1 with UniversalRP 14.0.11
 
 
 **Usage of the project**
 * Clone the repository or download the zip to use this project locally.
-* Load the project using Unity 2020.3.21f1 or later
+* Load the project using Unity 2022.3.27f1 or later
 * Each scene (located at Scenes folder) contains a different Scriptable Render Pass example
 
 **Project layout**
