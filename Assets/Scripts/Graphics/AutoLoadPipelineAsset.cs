@@ -26,7 +26,7 @@ public class AutoLoadPipelineAsset : MonoBehaviour
 
                 if (currentSceneName == sceneInfo.name)
                 {
-                    GraphicsSettings.renderPipelineAsset = m_PipelineAssetConfig.PipelineAssetBoundToScene[i].PipelineAsset;
+                    GraphicsSettings.defaultRenderPipeline = m_PipelineAssetConfig.PipelineAssetBoundToScene[i].PipelineAsset;
                 }
             }
         }

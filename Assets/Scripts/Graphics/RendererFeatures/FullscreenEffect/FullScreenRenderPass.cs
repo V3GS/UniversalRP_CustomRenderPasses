@@ -1,68 +1,53 @@
+using System;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
+using UnityEngine.Rendering.RenderGraphModule.Util;
 using UnityEngine.Rendering.Universal;
 
 public class FullScreenRenderPass : ScriptableRenderPass
 {
-    string m_ProfilerTag;
+    const string k_PassName = "FullScreenPass";
     Material m_BlitMaterial = null;
-    bool m_GenerateTemporaryColorTexture = false;
 
-    RTHandle m_Source;
-    RTHandle m_TemporaryColorTexture;
-
-    public FullScreenRenderPass(FullscreenRendererFeature.Settings settings, string tag)
+    public FullScreenRenderPass(FullscreenRendererFeature.Settings settings)
     {
         renderPassEvent = settings.renderPassEvent;
-        m_ProfilerTag = tag;
-        m_GenerateTemporaryColorTexture = settings.GenerateTemporaryColorTexture;
-
         m_BlitMaterial = settings.blitMaterial;
+
+        requiresIntermediateTexture = true;
     }
 
-    public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
+    public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
     {
-        ConfigureTarget(m_Source);
-    }
+        VolumeStack stack = VolumeManager.instance.stack;
+        FullScreenVolumeComponent customVolume = stack.GetComponent<FullScreenVolumeComponent>();
 
-    public void Setup(RTHandle destinationColor, in RenderingData renderingData)
-    {
-        m_Source = destinationColor;
+        if (!customVolume.IsActive()) return;
 
-        if (m_GenerateTemporaryColorTexture)
+        UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
+
+        if (resourceData.isActiveTargetBackBuffer)
         {
-            var colorCopyDescriptor = renderingData.cameraData.cameraTargetDescriptor;
-            colorCopyDescriptor.depthBufferBits = (int)DepthBits.None;
-            RenderingUtils.ReAllocateIfNeeded(ref m_TemporaryColorTexture, colorCopyDescriptor, name: "_TemporaryColorTexture");
-        }
-    }
-
-    public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
-    {
-        CommandBuffer cmd = CommandBufferPool.Get();
-        var cameraData = renderingData.cameraData;
-
-        using (new ProfilingScope(cmd, new ProfilingSampler(m_ProfilerTag)))
-        {
-            if (m_GenerateTemporaryColorTexture)
-            {
-                Blitter.BlitCameraTexture(cmd, m_Source, m_TemporaryColorTexture, m_BlitMaterial, 0);
-                Blitter.BlitCameraTexture(cmd, m_TemporaryColorTexture, m_Source);
-            }
-            else
-            {
-                Blitter.BlitCameraTexture(cmd, m_Source, m_Source, m_BlitMaterial, 0);
-            }
+            Debug.LogError($"Skipping render pass. FullScreenRendererFeature requires an intermediate ColorTexture, we can't use the BackBuffer as a texture input.");
+            return;
         }
 
-        context.ExecuteCommandBuffer(cmd);
-        cmd.Clear();
-        CommandBufferPool.Release(cmd);
-    }
+        // Get the source texture
+        var source = resourceData.activeColorTexture;
 
-    public void Dispose()
-    {
-        m_Source?.Release();
-        m_TemporaryColorTexture?.Release();
+        // Create the destination texture
+        var destinationDesc = renderGraph.GetTextureDesc(source);
+        destinationDesc.name = $"CameraColor-{k_PassName}";
+        destinationDesc.clearBuffer = false;
+
+        TextureHandle destination = renderGraph.CreateTexture(destinationDesc);
+
+        // Create blit parameters and Blit
+        RenderGraphUtils.BlitMaterialParameters para = new RenderGraphUtils.BlitMaterialParameters(source, destination, m_BlitMaterial, 0);
+        renderGraph.AddBlitPass(para, passName: k_PassName);
+
+        // Asign to the color texture the destination value after the blit
+        resourceData.cameraColor = destination;
     }
 }

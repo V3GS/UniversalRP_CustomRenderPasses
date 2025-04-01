@@ -9,7 +9,7 @@ public class OverrideMaterialRenderPassFeature : ScriptableRendererFeature
     public class Settings
     {
         public bool isEnabled = true;
-        public RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
+        public RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingPostProcessing;
         public Material overrideMaterial = null;
         
         public LayerMask layerMask;
@@ -27,7 +27,7 @@ public class OverrideMaterialRenderPassFeature : ScriptableRendererFeature
 
     public override void Create()
     {
-        m_ReplaceMaterialPass = new OverrideMaterialRenderPass(m_passSettings, name);
+        m_ReplaceMaterialPass = new OverrideMaterialRenderPass(m_passSettings);
     }
     
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)

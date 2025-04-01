@@ -1,29 +1,28 @@
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule.Util;
+using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.Universal;
 
 public class RadarRenderPass : ScriptableRenderPass
 {
-    string m_ProfilerTag;
+    const string k_PassName = "RadarPass";
     private Material m_RadarMaterial = null;
-    private RenderTargetIdentifier m_Source { get; set; }
-    RenderTargetHandle m_TemporaryColorTexture;
 
     static readonly int m_WaveDistance = Shader.PropertyToID("_WaveDistance");
     static readonly int m_TrailLenght = Shader.PropertyToID("_TrailLenght");
     static readonly int m_WaveColor= Shader.PropertyToID("_WaveColor");
     
 
-    public RadarRenderPass(RadarRendererFeature.Settings settings, string tag)
+    public RadarRenderPass(RadarRendererFeature.Settings settings)
     {
         renderPassEvent = settings.renderPassEvent;
-        m_ProfilerTag = tag;
-        m_TemporaryColorTexture.Init("_TemporaryColorTexture");
-        
         m_RadarMaterial = settings.blitMaterial;
         
         SetMaterialData(settings);
+
+        requiresIntermediateTexture = true;
     }
 
     private void SetMaterialData(RadarRendererFeature.Settings settings)
@@ -32,35 +31,38 @@ public class RadarRenderPass : ScriptableRenderPass
         m_RadarMaterial.SetFloat(m_WaveDistance, settings.WaveDistance);
         m_RadarMaterial.SetFloat(m_TrailLenght, settings.TrailLenght);
         m_RadarMaterial.SetColor(m_WaveColor, settings.WaveColor );
-    } 
-     
-    public void Setup(RenderTargetIdentifier sourceRenderTargetIdentifier)
-    {
-        this.m_Source = sourceRenderTargetIdentifier;
     }
-     
-    public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
+
+    public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
     {
-        CommandBuffer cmd = CommandBufferPool.Get();
+        //VolumeStack stack = VolumeManager.instance.stack;
+        //FullScreenVolumeComponent customVolume = stack.GetComponent<FullScreenVolumeComponent>();
 
-        using (new ProfilingScope(cmd, new ProfilingSampler(m_ProfilerTag)))
+        //if (!customVolume.IsActive()) return;
+
+        UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
+
+        if (resourceData.isActiveTargetBackBuffer)
         {
-            RenderTextureDescriptor opaqueDesc = renderingData.cameraData.cameraTargetDescriptor;
-            opaqueDesc.depthBufferBits = 0;
-
-            // It can't read and write to same color target, for that reason is necessary a temporary render texture
-            cmd.GetTemporaryRT(m_TemporaryColorTexture.id, opaqueDesc);
-
-            Blit(cmd, m_Source, m_TemporaryColorTexture.Identifier(), m_RadarMaterial);
-            Blit(cmd, m_TemporaryColorTexture.Identifier(), m_Source);
+            Debug.LogError($"Skipping render pass. FullScreenRendererFeature requires an intermediate ColorTexture, we can't use the BackBuffer as a texture input.");
+            return;
         }
 
-        context.ExecuteCommandBuffer(cmd);
-        CommandBufferPool.Release(cmd);
-    }
-         
-    public override void FrameCleanup(CommandBuffer cmd)
-    {
-        cmd.ReleaseTemporaryRT(m_TemporaryColorTexture.id);
+        // Get the source texture
+        var source = resourceData.activeColorTexture;
+
+        // Create the destination texture
+        var destinationDesc = renderGraph.GetTextureDesc(source);
+        destinationDesc.name = $"CameraColor-{k_PassName}";
+        destinationDesc.clearBuffer = false;
+
+        TextureHandle destination = renderGraph.CreateTexture(destinationDesc);
+
+        // Create blit parameters and Blit
+        RenderGraphUtils.BlitMaterialParameters para = new RenderGraphUtils.BlitMaterialParameters(source, destination, m_RadarMaterial, 0);
+        renderGraph.AddBlitPass(para, passName: k_PassName);
+
+        // Asign to the color texture the destination value after the blit
+        resourceData.cameraColor = destination;
     }
 }

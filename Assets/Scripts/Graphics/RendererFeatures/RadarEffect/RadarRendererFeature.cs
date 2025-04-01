@@ -28,7 +28,7 @@ public class RadarRendererFeature : ScriptableRendererFeature
 
     public override void Create()
     {
-        m_RadarPass = new RadarRenderPass(m_passSettings, name);
+        m_RadarPass = new RadarRenderPass(m_passSettings);
     }
  
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -46,11 +46,6 @@ public class RadarRendererFeature : ScriptableRendererFeature
         {
             renderer.EnqueuePass(m_RadarPass);
         }
-    }
-
-    public override void SetupRenderPasses(ScriptableRenderer renderer, in RenderingData renderingData)
-    {
-        m_RadarPass.Setup(renderer.cameraColorTargetHandle);
     }
 }
 

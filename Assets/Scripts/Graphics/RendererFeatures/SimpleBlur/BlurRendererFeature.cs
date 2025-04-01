@@ -30,7 +30,7 @@ public class BlurRendererFeature : ScriptableRendererFeature
 
     public override void Create()
     {
-        m_BlurPass = new BlurRenderPass(m_passSettings, name);
+        m_BlurPass = new BlurRenderPass(m_passSettings);
     }
  
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -47,11 +47,6 @@ public class BlurRendererFeature : ScriptableRendererFeature
         {
             renderer.EnqueuePass(m_BlurPass);
         }
-    }
-
-    public override void SetupRenderPasses(ScriptableRenderer renderer, in RenderingData renderingData)
-    {
-        m_BlurPass.Setup(renderer.cameraColorTargetHandle);
     }
 }
 

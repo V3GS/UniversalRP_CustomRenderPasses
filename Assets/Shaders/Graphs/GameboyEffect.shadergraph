@@ -4,9 +4,6 @@
     "m_ObjectId": "def6caef8693425d9870d5c4bfecb07f",
     "m_Properties": [
         {
-            "m_Id": "78685ba7f2ba4e039255aee7112f63bc"
-        },
-        {
             "m_Id": "44c6ea5acb97480e9ee728514e5a1042"
         }
     ],
@@ -234,6 +231,7 @@
     "m_OutputNode": {
         "m_Id": ""
     },
+    "m_SubDatas": [],
     "m_ActiveTargets": [
         {
             "m_Id": "b77f533e22d849aea71fa4c9842db923"
@@ -333,7 +331,7 @@
         "x": 0.0,
         "y": 0.0,
         "z": 0.0,
-        "w": 0.0
+        "w": 1.0
     },
     "m_Labels": []
 }
@@ -570,9 +568,6 @@
     "m_Name": "",
     "m_ChildObjectList": [
         {
-            "m_Id": "78685ba7f2ba4e039255aee7112f63bc"
-        },
-        {
             "m_Id": "44c6ea5acb97480e9ee728514e5a1042"
         }
     ]
@@ -625,36 +620,6 @@
         "w": 0.0
     },
     "m_Labels": []
-}
-
-{
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.Internal.Texture2DShaderProperty",
-    "m_ObjectId": "78685ba7f2ba4e039255aee7112f63bc",
-    "m_Guid": {
-        "m_GuidSerialized": "6cb22d6e-c480-450d-a7c7-7ea1495c8037"
-    },
-    "m_Name": "Main Texture",
-    "m_DefaultRefNameVersion": 0,
-    "m_RefNameGeneratedByDisplayName": "",
-    "m_DefaultReferenceName": "Texture2D_78685ba7f2ba4e039255aee7112f63bc",
-    "m_OverrideReferenceName": "_MainTex",
-    "m_GeneratePropertyBlock": true,
-    "m_UseCustomSlotLabel": false,
-    "m_CustomSlotLabel": "",
-    "m_DismissedVersion": 0,
-    "m_Precision": 0,
-    "overrideHLSLDeclaration": false,
-    "hlslDeclarationOverride": 0,
-    "m_Hidden": false,
-    "m_Value": {
-        "m_SerializedTexture": "{\"texture\":{\"instanceID\":0}}",
-        "m_Guid": ""
-    },
-    "isMainTexture": false,
-    "useTilingAndOffset": false,
-    "m_Modifiable": true,
-    "m_DefaultType": 0
 }
 
 {
@@ -1143,6 +1108,9 @@
     "m_AlphaClip": false,
     "m_CastShadows": true,
     "m_ReceiveShadows": true,
+    "m_DisableTint": false,
+    "m_AdditionalMotionVectorMode": 0,
+    "m_AlembicMotionVectors": false,
     "m_SupportsLODCrossFade": false,
     "m_CustomEditorGUI": "",
     "m_SupportVFX": false
@@ -1238,8 +1206,8 @@
     "m_ObjectId": "d1a19ecdc0c148d4bc2b860f86443f89",
     "m_Title": "Pixelate the main texture",
     "m_Position": {
-        "x": -1160.0001220703125,
-        "y": 65.0
+        "x": -1160.0,
+        "y": 65.00000762939453
     }
 }
 

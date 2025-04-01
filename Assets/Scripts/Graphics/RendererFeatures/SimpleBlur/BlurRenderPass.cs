@@ -1,61 +1,90 @@
+using Mono.Cecil;
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
+using UnityEngine.Rendering.RenderGraphModule.Util;
 using UnityEngine.Rendering.Universal;
 
 public class BlurRenderPass : ScriptableRenderPass
 {
-    string m_ProfilerTag;
+    private const string k_PassName = "FullScreenPass";
     private Material m_BlurMaterial = null;
-    private RenderTargetIdentifier m_Source { get; set; }
-    RenderTargetHandle m_TemporaryColorTexture;
-    
+
+    private const string k_BlurTextureName = "_BlurTexture";
+    private RenderTextureDescriptor m_BlurTextureDescriptor;
+
     // Reference to shader properties IDs.
     static readonly int m_GrayscaleProperty = Shader.PropertyToID("_Grayscale");
-    static readonly int m_BlurX = Shader.PropertyToID("_BlurX");
-    static readonly int m_BlurY = Shader.PropertyToID("_BlurY");
+    static readonly int m_BlurXId = Shader.PropertyToID("_BlurX");
+    static readonly int m_BlurYId = Shader.PropertyToID("_BlurY");
 
-    public BlurRenderPass(BlurRendererFeature.Settings settings, string tag)
+    public bool m_Grayscale = false;
+    private float m_BlurXValue = 0.0f;
+    private float m_BlurYValue = 0.0f;
+
+    public BlurRenderPass(BlurRendererFeature.Settings settings)
     {
         renderPassEvent = settings.renderPassEvent;
-        m_ProfilerTag = tag;
-        m_TemporaryColorTexture.Init("_TemporaryColorTexture");
-        
         m_BlurMaterial = settings.blurMaterial;
-        
-        // Set any material properties based on our pass settings. 
-        m_BlurMaterial.SetInt(m_GrayscaleProperty, Convert.ToInt32(settings.grayscale) );
-        m_BlurMaterial.SetFloat(m_BlurX, settings.blurX );
-        m_BlurMaterial.SetFloat(m_BlurY, settings.blurY );
-    }
-     
-    public void Setup(RenderTargetIdentifier sourceRenderTargetIdentifier)
-    {
-        this.m_Source = sourceRenderTargetIdentifier;
-    }
-     
-    public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
-    {
-        CommandBuffer cmd = CommandBufferPool.Get();
 
-        using (new ProfilingScope(cmd, new ProfilingSampler(m_ProfilerTag)))
+        m_Grayscale = settings.grayscale;
+        m_BlurXValue = settings.blurX;
+        m_BlurYValue = settings.blurY;
+
+        requiresIntermediateTexture = true;
+
+        m_BlurTextureDescriptor = new RenderTextureDescriptor(Screen.width, Screen.height, RenderTextureFormat.Default, 0);
+    }
+
+    public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
+    {
+        UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
+
+        TextureHandle source = resourceData.activeColorTexture;
+        TextureHandle destination = UniversalRenderer.CreateRenderGraphTexture(renderGraph, m_BlurTextureDescriptor, k_BlurTextureName, false);
+
+        UniversalCameraData cameraData = frameData.Get<UniversalCameraData>();
+
+        // The following line ensures that the render pass doesn't blit from the back buffer.
+        if (resourceData.isActiveTargetBackBuffer)
         {
-            RenderTextureDescriptor opaqueDesc = renderingData.cameraData.cameraTargetDescriptor;
-            opaqueDesc.depthBufferBits = 0;
-
-            // It can't read and write to same color target, for that reason is necessary a temporary render texture
-            cmd.GetTemporaryRT(m_TemporaryColorTexture.id, opaqueDesc);
-
-            Blit(cmd, m_Source, m_TemporaryColorTexture.Identifier(), m_BlurMaterial);
-            Blit(cmd, m_TemporaryColorTexture.Identifier(), m_Source);
+            Debug.LogError($"Skipping render pass. BlurRendererFeature requires an intermediate ColorTexture, we can't use the BackBuffer as a texture input.");
+            return;
         }
 
-        context.ExecuteCommandBuffer(cmd);
-        CommandBufferPool.Release(cmd);
+        // Set the blur texture size to be the same as the camera target size.
+        m_BlurTextureDescriptor.width = cameraData.cameraTargetDescriptor.width;
+        m_BlurTextureDescriptor.height = cameraData.cameraTargetDescriptor.height;
+        m_BlurTextureDescriptor.depthBufferBits = 0;
+
+        UpdateBlurSettings();
+
+        // This check is to avoid an error from the material preview in the scene
+        if (!source.IsValid() || !destination.IsValid())
+            return;
+
+        // Create blit parameters and Blit
+        RenderGraphUtils.BlitMaterialParameters para = new RenderGraphUtils.BlitMaterialParameters(source, destination, m_BlurMaterial, 0);
+        renderGraph.AddBlitPass(para, passName: k_PassName);
+
+        // Asign to the color texture the destination value after the blit
+        resourceData.cameraColor = destination;
     }
-         
-    public override void FrameCleanup(CommandBuffer cmd)
+
+    private void UpdateBlurSettings()
     {
-        cmd.ReleaseTemporaryRT(m_TemporaryColorTexture.id);
+        if (m_BlurMaterial == null) return;
+
+        BlurVolumeComponent volumeComponent = VolumeManager.instance.stack.GetComponent<BlurVolumeComponent>();
+
+        bool isGrayscale = volumeComponent.grayscaleEffect.overrideState ? volumeComponent.grayscaleEffect.value : m_Grayscale;
+        float horizontalBlur = volumeComponent.horizontalBlur.overrideState ? volumeComponent.horizontalBlur.value : m_BlurXValue;
+        float verticalBlur = volumeComponent.verticalBlur.overrideState ? volumeComponent.verticalBlur.value : m_BlurYValue;
+
+        // Set any material properties based on our pass settings
+        m_BlurMaterial.SetInt(m_GrayscaleProperty, Convert.ToInt32(isGrayscale));
+        m_BlurMaterial.SetFloat(m_BlurXId, horizontalBlur);
+        m_BlurMaterial.SetFloat(m_BlurYId, verticalBlur);
     }
 }
